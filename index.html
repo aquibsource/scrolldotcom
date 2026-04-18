@@ -451,7 +451,7 @@ Return ONLY a valid JSON array. No markdown, no preamble.`;
       'Authorization': `Bearer ${window.ANTHROPIC_KEY}`
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'llama-3.3-70b-versatile',
       max_tokens: 1000,
       messages: [{ role: 'user', content: prompt }]
     })
