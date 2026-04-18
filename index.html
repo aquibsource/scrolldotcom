@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Scroll — Wisdom from the World's Books</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,400;1,9..144,200;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0d0c0a;
+    --parchment: #f7f2e8;
+    --aged: #e8dfc8;
+    --sepia: #8c6d3f;
+    --rust: #9b3a1a;
+    --gold: #c9943a;
+    --muted: #6b5e47;
+    --faint: #c4b99a;
+    --card-bg: #faf6ed;
+    --shadow: rgba(13,12,10,0.12);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--ink);
+    color: var(--parchment);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* ── GRAIN OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.35;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 3rem;
+    background: linear-gradient(to bottom, rgba(13,12,10,0.97) 0%, rgba(13,12,10,0) 100%);
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 1.05rem;
+    font-weight: 200;
+    letter-spacing: 0.35em;
+    color: var(--faint);
+    text-transform: uppercase;
+  }
+
+  .logo span {
+    color: var(--gold);
+  }
+
+  .tagline {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 300;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 6rem 2rem 4rem;
+    position: relative;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: linear-gradient(to bottom, transparent, var(--ink));
+    pointer-events: none;
+  }
+
+  .hero-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s ease forwards;
+  }
+
+  .hero-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-weight: 200;
+    line-height: 1.05;
+    color: var(--parchment);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s ease forwards;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    font-weight: 300;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 4rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.6s ease forwards;
+  }
+
+  .scroll-cue {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 1s ease forwards;
+  }
+
+  .scroll-cue span {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .scroll-line {
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+
+  /* ── FEED ── */
+  #feed {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 8rem;
+  }
+
+  /* ── WISDOM CARD ── */
+  .card {
+    margin-bottom: 5rem;
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+    position: relative;
+  }
+
+  .card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .card-inner {
+    background: var(--card-bg);
+    border: 1px solid var(--aged);
+    border-radius: 2px;
+    padding: 3rem 3.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-inner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--gold), var(--rust));
+  }
+
+  .card-inner::after {
+    content: '\201C';
+    position: absolute;
+    top: -0.5rem;
+    right: 1.5rem;
+    font-family: 'Fraunces', serif;
+    font-size: 8rem;
+    color: var(--aged);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .card-category {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--rust);
+    margin-bottom: 1.5rem;
+  }
+
+  .card-wisdom {
+    font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+    font-weight: 300;
+    line-height: 1.8;
+    color: var(--ink);
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card-wisdom em {
+    font-style: italic;
+    color: var(--sepia);
+  }
+
+  .card-divider {
+    width: 40px;
+    height: 1px;
+    background: var(--faint);
+    margin-bottom: 1.25rem;
+  }
+
+  .card-source {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .card-book {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--sepia);
+    letter-spacing: 0.02em;
+  }
+
+  .card-author {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 300;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .card-meta {
+    position: absolute;
+    bottom: 1.25rem;
+    right: 1.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--faint);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── SEPARATOR ── */
+  .sep {
+    text-align: center;
+    margin: 2rem 0 5rem;
+    color: var(--muted);
+    font-size: 1rem;
+    letter-spacing: 0.5em;
+  }
+
+  /* ── SKELETON / LOADER ── */
+  #loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem;
+  }
+
+  .loader-glyph {
+    font-family: 'Fraunces', serif;
+    font-size: 2rem;
+    font-weight: 200;
+    color: var(--gold);
+    animation: breathe 2s ease-in-out infinite;
+  }
+
+  .loader-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ── SKELETON CARD ── */
+  .skeleton {
+    margin-bottom: 5rem;
+  }
+
+  .skeleton-inner {
+    background: rgba(247,242,232,0.04);
+    border: 1px solid rgba(196,185,154,0.1);
+    border-radius: 2px;
+    padding: 3rem 3.5rem;
+  }
+
+  .skel-line {
+    height: 1px;
+    background: rgba(196,185,154,0.12);
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+  .skel-line.short { width: 30%; }
+  .skel-line.med { width: 65%; }
+  .skel-line.full { width: 100%; }
+  .skel-line.lg { height: 16px; }
+
+  /* ── BOTTOM ANCHOR ── */
+  #anchor { height: 4px; }
+
+  /* ── KEYFRAMES ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes breathe {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50%       { opacity: 1;   transform: scale(1.08); }
+  }
+
+  @keyframes shimmer {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.8; }
+  }
+
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; }
+    50%       { opacity: 1; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    header { padding: 1rem 1.25rem; }
+    .card-inner { padding: 2rem 1.5rem; }
+    .card-inner::after { font-size: 5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">The <span>Scroll</span></div>
+  <div class="tagline">Wisdom from the World's Books</div>
+</header>
+
+<!-- KEY GATE -->
+<div id="key-gate" style="position:fixed;inset:0;z-index:999;background:#0d0c0a;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;">
+  <div style="font-family:'Fraunces',serif;font-size:2.2rem;font-weight:200;color:#c9943a;margin-bottom:0.5rem;">The Scroll</div>
+  <div style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:#6b5e47;text-transform:uppercase;margin-bottom:3rem;">Wisdom from the World's Books</div>
+  <div style="max-width:420px;width:100%;">
+    <p style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:300;color:#c4b99a;line-height:1.8;margin-bottom:2rem;">
+      Paste your free Anthropic API key to begin.<br>
+      Get yours at <a href="https://console.anthropic.com" target="_blank" style="color:#c9943a;text-underline-offset:3px;">console.anthropic.com</a> &rarr; API Keys &rarr; Create Key
+    </p>
+    <input id="key-input" type="password" placeholder="Paste your key here  (sk-ant-...)"
+      style="width:100%;padding:0.85rem 1rem;background:rgba(247,242,232,0.05);border:1px solid rgba(196,185,154,0.25);border-radius:2px;color:#f7f2e8;font-family:'DM Mono',monospace;font-size:0.75rem;letter-spacing:0.05em;outline:none;margin-bottom:1rem;" />
+    <button onclick="startApp()"
+      style="width:100%;padding:0.85rem;background:transparent;border:1px solid #c9943a;border-radius:2px;color:#c9943a;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;"
+      onmouseover="this.style.background='rgba(201,148,58,0.1)'"
+      onmouseout="this.style.background='transparent'">Begin Reading &rarr;</button>
+    <p id="key-error" style="font-family:'DM Mono',monospace;font-size:0.6rem;color:#9b3a1a;letter-spacing:0.1em;margin-top:1rem;display:none;">Key must start with sk-ant- &middot; Check and try again</p>
+    <p style="font-family:'DM Mono',monospace;font-size:0.55rem;color:#4a3f30;letter-spacing:0.08em;margin-top:1.5rem;line-height:1.8;">Your key stays in your browser only.<br>Never sent anywhere except directly to Anthropic.</p>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-label">∞ Infinite Reading</div>
+  <h1 class="hero-title">Every scroll,<br><em>a new idea</em></h1>
+  <p class="hero-sub">Distilled wisdom from thousands of books — celebrated and forgotten — delivered to you in an endless, quiet stream. No noise. No opinions. Just ideas.</p>
+  <div class="scroll-cue">
+    <span>Scroll to begin</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<div id="feed"></div>
+<div id="loader">
+  <div class="loader-glyph">◈</div>
+  <div class="loader-text">Gathering wisdom…</div>
+</div>
+<div id="anchor"></div>
+
+<script>
+const feed = document.getElementById('feed');
+const loader = document.getElementById('loader');
+const anchor = document.getElementById('anchor');
+
+let isFetching = false;
+let cardCount = 0;
+let batchBuffer = [];
+
+const CATEGORIES = [
+  'Philosophy', 'Psychology', 'Literature', 'History', 'Science',
+  'Economics', 'Sociology', 'Mythology', 'Eastern Philosophy',
+  'Stoicism', 'Existentialism', 'Anthropology', 'Ecology', 'Ethics',
+  'Linguistics', 'Political Thought', 'Spirituality', 'Mathematics'
+];
+
+async function fetchWisdomBatch() {
+  const cats = [...CATEGORIES].sort(() => Math.random() - 0.5).slice(0, 4).join(', ');
+  const prompt = `You are a curator of human wisdom. Generate exactly 5 distinct book insights as a JSON array. Each object must have:
+- "wisdom": a 2–4 sentence insight, idea, or observation distilled from the book. Not a direct quote — a thoughtful synthesis. Italicize one key phrase using *asterisks*.
+- "book": the exact book title
+- "author": the author's name (First Last)
+- "category": one of [${cats}]
+- "year": publication year
+
+Draw from a wide range of eras, cultures, and genres — include both celebrated classics and lesser-known works. Do NOT repeat authors or books from typical AI suggestions. Prioritize depth and the kind of insight that makes a reader pause.
+
+Return ONLY a valid JSON array. No markdown, no preamble.`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': window.ANTHROPIC_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!res.ok) throw new Error('API error');
+  const data = await res.json();
+  const raw = data.content?.[0]?.text || '[]';
+  const clean = raw.replace(/```json|```/gi, '').trim();
+  return JSON.parse(clean);
+}
+
+function buildCard(item) {
+  cardCount++;
+  const wisdomHtml = (item.wisdom || '')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+  const el = document.createElement('div');
+  el.className = 'card';
+  el.innerHTML = `
+    <div class="card-inner">
+      <div class="card-category">${item.category || 'Wisdom'}</div>
+      <p class="card-wisdom">${wisdomHtml}</p>
+      <div class="card-divider"></div>
+      <div class="card-source">
+        <span class="card-book">${item.book || 'Unknown'}</span>
+        <span class="card-author">${item.author || ''} · ${item.year || ''}</span>
+      </div>
+      <div class="card-meta">#${String(cardCount).padStart(3,'0')}</div>
+    </div>
+  `;
+  return el;
+}
+
+function buildSkeleton() {
+  const el = document.createElement('div');
+  el.className = 'skeleton';
+  el.innerHTML = `
+    <div class="skeleton-inner">
+      <div class="skel-line short" style="margin-bottom:1.5rem"></div>
+      <div class="skel-line full lg"></div>
+      <div class="skel-line full lg"></div>
+      <div class="skel-line med lg" style="margin-bottom:2rem"></div>
+      <div class="skel-line short"></div>
+      <div class="skel-line short" style="width:20%;margin-bottom:0"></div>
+    </div>
+  `;
+  return el;
+}
+
+function buildSep() {
+  const el = document.createElement('div');
+  el.className = 'sep';
+  el.textContent = '· · ·';
+  return el;
+}
+
+// Observe cards for fade-in
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      revealObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+async function appendCards(items) {
+  for (const item of items) {
+    const card = buildCard(item);
+    feed.appendChild(card);
+    requestAnimationFrame(() => revealObserver.observe(card));
+    await new Promise(r => setTimeout(r, 80));
+  }
+  if (cardCount % 10 === 0) feed.appendChild(buildSep());
+}
+
+async function loadBatch() {
+  if (isFetching) return;
+  isFetching = true;
+  loader.style.display = 'flex';
+
+  // Show skeletons
+  const skels = [buildSkeleton(), buildSkeleton(), buildSkeleton()];
+  skels.forEach(s => feed.appendChild(s));
+
+  try {
+    // Use buffer first
+    let items = [];
+    if (batchBuffer.length >= 5) {
+      items = batchBuffer.splice(0, 5);
+    } else {
+      const [batch1, batch2] = await Promise.all([fetchWisdomBatch(), fetchWisdomBatch()]);
+      const all = [...batch1, ...batch2];
+      items = all.splice(0, 5);
+      batchBuffer.push(...all);
+    }
+
+    // Remove skeletons
+    skels.forEach(s => s.remove());
+    await appendCards(items);
+
+    // Pre-fetch next batch silently
+    if (batchBuffer.length < 5) {
+      fetchWisdomBatch().then(b => batchBuffer.push(...b)).catch(() => {});
+    }
+  } catch (err) {
+    skels.forEach(s => s.remove());
+    const errEl = document.createElement('div');
+    errEl.style.cssText = 'text-align:center;padding:2rem;color:#6b5e47;font-family:"DM Mono",monospace;font-size:0.7rem;letter-spacing:0.1em;';
+    errEl.textContent = 'Could not reach the library. Scroll to try again.';
+    feed.appendChild(errEl);
+  }
+
+  loader.style.display = 'none';
+  isFetching = false;
+}
+
+// Infinite scroll via IntersectionObserver
+const scrollObserver = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting) loadBatch();
+}, { threshold: 0, rootMargin: '0px 0px 400px 0px' });
+
+scrollObserver.observe(anchor);
+
+// Initial load triggered after key entry
+
+function startApp() {
+  const key = document.getElementById('key-input').value.trim();
+  const err = document.getElementById('key-error');
+  if (!key.startsWith('sk-ant-')) {
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+  window.ANTHROPIC_KEY = key;
+  document.getElementById('key-gate').style.opacity = '0';
+  document.getElementById('key-gate').style.transition = 'opacity 0.5s ease';
+  setTimeout(() => document.getElementById('key-gate').style.display = 'none', 500);
+  loadBatch();
+}
+
+// Allow Enter key to submit
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && document.getElementById('key-gate').style.display !== 'none') startApp();
+});
+
+</script>
+</body>
+</html>
