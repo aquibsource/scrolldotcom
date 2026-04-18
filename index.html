@@ -384,16 +384,16 @@
   <div style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:#6b5e47;text-transform:uppercase;margin-bottom:3rem;">Wisdom from the World's Books</div>
   <div style="max-width:420px;width:100%;">
     <p style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:300;color:#c4b99a;line-height:1.8;margin-bottom:2rem;">
-      Paste your free Anthropic API key to begin.<br>
-      Get yours at <a href="https://console.anthropic.com" target="_blank" style="color:#c9943a;text-underline-offset:3px;">console.anthropic.com</a> &rarr; API Keys &rarr; Create Key
+      Paste your free Groq API key to begin.<br>
+      Get yours at <a href="https://console.groq.com" target="_blank" style="color:#c9943a;text-underline-offset:3px;">console.groq.com</a> &rarr; API Keys &rarr; Create Key
     </p>
-    <input id="key-input" type="password" placeholder="Paste your key here  (sk-ant-...)"
+    <input id="key-input" type="password" placeholder="Paste your Groq key here  (gsk_...)"
       style="width:100%;padding:0.85rem 1rem;background:rgba(247,242,232,0.05);border:1px solid rgba(196,185,154,0.25);border-radius:2px;color:#f7f2e8;font-family:'DM Mono',monospace;font-size:0.75rem;letter-spacing:0.05em;outline:none;margin-bottom:1rem;" />
     <button onclick="startApp()"
       style="width:100%;padding:0.85rem;background:transparent;border:1px solid #c9943a;border-radius:2px;color:#c9943a;font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;"
       onmouseover="this.style.background='rgba(201,148,58,0.1)'"
       onmouseout="this.style.background='transparent'">Begin Reading &rarr;</button>
-    <p id="key-error" style="font-family:'DM Mono',monospace;font-size:0.6rem;color:#9b3a1a;letter-spacing:0.1em;margin-top:1rem;display:none;">Key must start with sk-ant- &middot; Check and try again</p>
+    <p id="key-error" style="font-family:'DM Mono',monospace;font-size:0.6rem;color:#9b3a1a;letter-spacing:0.1em;margin-top:1rem;display:none;">Key must start with gsk_ &middot; Check and try again</p>
     <p style="font-family:'DM Mono',monospace;font-size:0.55rem;color:#4a3f30;letter-spacing:0.08em;margin-top:1.5rem;line-height:1.8;">Your key stays in your browser only.<br>Never sent anywhere except directly to Anthropic.</p>
   </div>
 </div>
@@ -444,13 +444,11 @@ Draw from a wide range of eras, cultures, and genres — include both celebrated
 
 Return ONLY a valid JSON array. No markdown, no preamble.`;
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': window.ANTHROPIC_KEY,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
+      'Authorization': `Bearer ${window.ANTHROPIC_KEY}`
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
@@ -461,7 +459,7 @@ Return ONLY a valid JSON array. No markdown, no preamble.`;
 
   if (!res.ok) throw new Error('API error');
   const data = await res.json();
-  const raw = data.content?.[0]?.text || '[]';
+  const raw = data.choices?.[0]?.message?.content || '[]';
   const clean = raw.replace(/```json|```/gi, '').trim();
   return JSON.parse(clean);
 }
@@ -584,7 +582,7 @@ scrollObserver.observe(anchor);
 function startApp() {
   const key = document.getElementById('key-input').value.trim();
   const err = document.getElementById('key-error');
-  if (!key.startsWith('sk-ant-')) {
+  if (!key.startsWith('gsk_')) {
     err.style.display = 'block';
     return;
   }
